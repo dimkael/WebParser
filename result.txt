@@ -1,0 +1,13 @@
+https://realpython.com/directory-tree-generator-python/
+https://realpython.com/courses/start-with-pyenv/
+https://realpython.com/start-contributing-python/
+https://realpython.com/knn-python/
+https://realpython.com/courses/python-vs-java-object-oriented-programming/
+https://realpython.com/python-news-march-2021/
+https://realpython.com/interview-will-mcgugan/
+https://realpython.com/courses/understand-list-comprehensions/
+https://realpython.com/python-ordereddict/
+https://realpython.com/interview-dane-hillard/
+https://realpython.com/courses/records-sets-ideal-data-structure/
+https://realpython.com/asteroids-game-python/
+https://realpython.com/python-ai-neural-network/

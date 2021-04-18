@@ -21,7 +21,10 @@ async def crawler(keyword):
             html_code = await response.text()
         dom_tree = html.fromstring(html_code)
         links = dom_tree.xpath('//div[@class="card border-0"]/a/@href')
-        print(links)
+
+        with open('result.txt', 'w') as f:
+            for link in links:
+                f.write(f'{url}{link}\n')
 
 
 if __name__ == '__main__':
