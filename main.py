@@ -1,6 +1,17 @@
 import asyncio
 from aiohttp import ClientSession
+from concurrent.futures import ThreadPoolExecutor
 from lxml import html
+
+
+loop = asyncio.get_event_loop()
+executor = ThreadPoolExecutor(max_workers=8)
+
+
+def parse_html(html_code):
+    dom_tree = html.fromstring(html_code)
+    links = dom_tree.xpath('//a[@class="VDXfz"]/@href')
+    return links
 
 
 async def crawler(queue):
@@ -10,9 +21,7 @@ async def crawler(queue):
         url = f'{domain}search?q={topic}'
 
         if queue.empty():
-            await asyncio.sleep(10)
-            if queue.empty():
-                break
+            break
 
         headers = {
             'User-Agent': '''Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
@@ -24,8 +33,8 @@ async def crawler(queue):
             async with session.get(url, headers=headers) as response:
                 print(response.status, url)
                 html_code = await response.text()
-            dom_tree = html.fromstring(html_code)
-            links = dom_tree.xpath('//a[@class="VDXfz"]/@href')
+
+            links = await loop.run_in_executor(executor, parse_html, html_code)
 
             with open('result.txt', 'w') as f:
                 for link in links:
@@ -41,7 +50,7 @@ async def main():
         await queue.put(topic)
 
     tasks = []
-    for _ in range(1):
+    for _ in range(4):
         task = asyncio.Task(crawler(queue))
         tasks.append(task)
 
@@ -49,4 +58,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    loop.run_until_complete(main())
