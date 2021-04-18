@@ -3,14 +3,16 @@ from aiohttp import ClientSession
 from lxml import html
 
 
-with open('topics.txt', 'r') as f:
-    topics = [line.strip() for line in f if line]
-
-
-async def crawler(topic, semaphore):
-    async with semaphore:
+async def crawler(queue):
+    while True:
+        topic = await queue.get()
         domain = 'https://news.google.com/'
         url = f'{domain}search?q={topic}'
+
+        if queue.empty():
+            await asyncio.sleep(10)
+            if queue.empty():
+                break
 
         headers = {
             'User-Agent': '''Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
@@ -24,7 +26,6 @@ async def crawler(topic, semaphore):
                 html_code = await response.text()
             dom_tree = html.fromstring(html_code)
             links = dom_tree.xpath('//a[@class="VDXfz"]/@href')
-            print(links)
 
             with open('result.txt', 'w') as f:
                 for link in links:
@@ -32,15 +33,20 @@ async def crawler(topic, semaphore):
 
 
 async def main():
-    tasks = []
-    sem = asyncio.Semaphore(value=1)
+    with open('topics.txt', 'r') as f:
+        topics = [line.strip() for line in f if line]
 
+    queue = asyncio.Queue()
     for topic in topics:
-        task = asyncio.Task(crawler(topic, sem))
+        await queue.put(topic)
+
+    tasks = []
+    for _ in range(1):
+        task = asyncio.Task(crawler(queue))
         tasks.append(task)
 
     await asyncio.gather(*tasks)
 
+
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    asyncio.run(main())
